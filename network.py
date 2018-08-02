@@ -1,65 +1,59 @@
 import csv
 import cv2
 import numpy as np
+import sklearn
+from random import randint
 
-folder_names = [
-#        'provided'
-         'normal_driving_3_rounds',
-         'reverse_driving_3_rounds',
-         'veer_to_center_normal_1_round',
-         'veer_to_center_back_1_round'
-#        'jungle_normal_1_round',
-#        'jungle_reverse_1_round',
-        ]
+## OPEN FILES
+samples = []
+with open('./driving_log.csv') as csvfile:
+    reader = csv.reader(csvfile)
+    for line in reader:
+        samples.append(line)
 
-images = []
-measurements = []
+from sklearn.model_selection import train_test_split
+train_samples, validation_samples = train_test_split(samples, test_size=0.2)
 
-for folder in folder_names:
-    lines = []
-    with open('./data/' + folder + '/driving_log.csv') as csvfile:
-        reader = csv.reader(csvfile)
-        for line in reader:
-            lines.append(line)
+## INPUT DATA IN BATCHES, RANDOM AUGMENTATION
+def generator(samples, batch_size=32):
+    num_samples = len(samples)
+    correction = 0.2
+    while 1:
+        shuffle(samples)
+        for offset in range(0, num_samples, batch_size):
+            batch_samples = samples[offset:offset+batch_size]
+            
+            images = []
+            angles = []
+            for batch_sample in batch_samples:
+                dir = randint(0,2)
+                flip = randint(0,1)
+                name = './IMG/'+batch_sample[dir].split('\\')[-1]
+                image = cv2.imread(name)
+                if dir == 0:
+                    angle = float(batch_sample[3])
+                if dir == 1:
+                    angle = float(batch_sample[3] + correction)
+                if dir == 2:
+                    angle = float(batch_sample[3] - correction)
+                if flip:
+                    image = cv2.flip(image,1)
+                    angle *= -1.0
+                images.append(image)
+                angles.append(angle)
+            
+            X_train = np.array(images)
+            y_train = np.array(images)
+            yield sklearn.utils.shuffle(X_train, y_train)
 
-    for line in lines:
-        source_path = line[0]
-        filename = source_path.split('\\')[-1]
-#       filename = source_path.split('/')[-1]
-        current_path_center = './data/' + folder + '/IMG/' + filename
-        current_path_left = './data/' + folder + '/IMG/' + filename.replace('center','left')
-        current_path_right = './data/' + folder + '/IMG/' + filename.replace('center','right')
-        
-        # create adjusted steering measurements for the side camera images
-        steering_center = float(line[3])
-        correction = 0.2 # this is a parameter to tune
-        steering_left = steering_center + correction
-        steering_right = steering_center - correction
-        
-        img_center = cv2.imread(current_path_center)
-        img_left = cv2.imread(current_path_left)
-        img_right = cv2.imread(current_path_right)
-        images.extend((img_center, img_left, img_right))
-        measurements.extend((steering_center, steering_left, steering_right))
+train_generator = generator(train_samples, batch_size=32)
+validation_generator = generator(validation_samples, batch_size=32)
 
-augmented_images, augmented_measurements = [], []
-for image, measurement in zip(images,measurements):
-    augmented_images.append(image)
-    augmented_measurements.append(measurement)
-    augmented_images.append(cv2.flip(image,1))
-    augmented_measurements.append(measurement*-1.0)
-
-
-X_train = np.array(augmented_images)
-y_train = np.array(augmented_measurements)
-print("X shape:", X_train.shape)
-print("y shape:", y_train.shape)
-
-
+## MODEL ARCHITECTURE
 from keras.models import Sequential
 from keras.layers import Flatten, Dense, Lambda, Cropping2D
 from keras.layers import Convolution2D, MaxPooling2D
-
+import matplotlib.pyplot as plt
 
 model = Sequential()
 model.add(Cropping2D(cropping=((50,20), (0,0)), input_shape=(160,320,3)))
@@ -73,7 +67,19 @@ model.add(Dense(120))
 model.add(Dense(84))
 model.add(Dense(1))
 
+## MODEL TRAINING AND EVALUATION
 model.compile(loss='mse', optimizer='adam')
-model.fit(X_train, y_train, validation_split=0.2, shuffle=True, nb_epoch=5)
-
+history = model.fit_generator(train_generator,
+                              samples_per_epoch=len(train_samples),
+                              validation_data=validation_generator,
+                              nb_val_samples=len(validation_samples),
+                              nb_epoch=5)
 model.save('model.h5')
+print(history.history.keys())
+plt.plot(history.history['loss'])
+plt.plot(history.history['val_loss'])
+plt.title('model mean squared error loss')
+plt.ylabel('mean squared error loss')
+plt.xlabel('epoch')
+plt.legend(['training set', 'validation set'], loc='upper right')
+plt.show()
