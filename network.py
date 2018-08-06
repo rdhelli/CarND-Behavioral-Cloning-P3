@@ -11,6 +11,7 @@ from keras.models import Sequential
 from keras.layers import Flatten, Dense, Lambda, Cropping2D, Conv2D, Dropout
 from keras.optimizers import Adam
 from keras.callbacks import ModelCheckpoint
+from keras.utils import plot_model
 
 
 # CREATING INPUT DATA FOLDER FROM MULTIPLE FOLDERS
@@ -120,9 +121,9 @@ def generator(samples, batch_size=32, training=True):
                               (b_imgs[i].shape[1], b_imgs[i].shape[0]))
                 images.extend(b_imgs)
                 angles.extend(b_angs)
-            plt.figure()
-            plt.hist(angles, bins=30)
-            plt.show()
+            # plt.figure()
+            # plt.hist(angles, bins=30)
+            # plt.show()
             X_train = np.array(images)
             y_train = np.array(angles)
             yield sklearn.utils.shuffle(X_train, y_train)
@@ -146,6 +147,7 @@ model = Sequential([
         Dense(1)
 ])
 print(model.summary())
+plot_model(model, to_file='./examples/model.png', show_shapes=True)
 
 # MODEL TRAINING AND EVALUATION
 train_generator = generator(train_samples, batch_size=64, training=True)
