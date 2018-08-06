@@ -20,9 +20,15 @@ The goals / steps of this project are the following:
 [image2]: ./examples/batch_hist_01.png "Batch Histogram 1"
 [image3]: ./examples/batch_hist_02.png "Batch Histogram 2"
 [image4]: ./examples/batch_hist_03.png "Batch Histogram 3"
-[image5]: ./examples/placeholder_small.png "Recovery Image"
-[image6]: ./examples/placeholder_small.png "Normal Image"
-[image7]: ./examples/placeholder_small.png "Flipped Image"
+[image5]: ./examples/model.png "Model Architecture"
+[image6]: ./examples/center1.jpg "Center Driving"
+[image7]: ./examples/recovery1.jpg "Recovery Driving 1"
+[image8]: ./examples/recovery2.jpg "Recovery Driving 2"
+[image9]: ./examples/recovery3.jpg "Recovery Driving 3"
+[image10]: ./examples/flip1.jpg "Not-Flipped Image"
+[image11]: ./examples/flip2.jpg "Flipped Image"
+[image12]: ./examples/translate1.jpg "Translated Image 1"
+[image13]: ./examples/translate2.jpg "Translated Image 2"
 
 ## Rubric Points
 ### Here I will consider the [rubric points](https://review.udacity.com/#!/rubrics/432/view) individually and describe how I addressed each point in my implementation.  
@@ -50,39 +56,6 @@ The model.py file contains the code for training and saving the convolution neur
 
 #### 2.1. An appropriate model architecture has been employed
 My model consists of the NVIDIA architecture presented in the lecture videos. The input is cropped in a network layer (line 134) to make use of the gpu during training. The five convolutional layers are built with three 5×5 sized and two 3×3 sized filters and depths between 24 and 64 (model.py lines 133-147). The model includes 'relu' functions as activations to introduce nonlinearity (line 136-145), and the data is normalized in the model using a Keras lambda layer (line 135).
-_________________________________________________________________
-Layer (type)                 Output Shape              Param #
-=================================================================
-cropping2d_1 (Cropping2D)    (None, 80, 320, 3)        0
-_________________________________________________________________
-lambda_1 (Lambda)            (None, 80, 320, 3)        0
-_________________________________________________________________
-conv2d_1 (Conv2D)            (None, 38, 158, 24)       1824
-_________________________________________________________________
-conv2d_2 (Conv2D)            (None, 17, 77, 36)        21636
-_________________________________________________________________
-conv2d_3 (Conv2D)            (None, 7, 37, 48)         43248
-_________________________________________________________________
-conv2d_4 (Conv2D)            (None, 5, 35, 64)         27712
-_________________________________________________________________
-conv2d_5 (Conv2D)            (None, 3, 33, 64)         36928
-_________________________________________________________________
-dropout_1 (Dropout)          (None, 3, 33, 64)         0
-_________________________________________________________________
-flatten_1 (Flatten)          (None, 6336)              0
-_________________________________________________________________
-dense_1 (Dense)              (None, 100)               633700
-_________________________________________________________________
-dense_2 (Dense)              (None, 50)                5050
-_________________________________________________________________
-dense_3 (Dense)              (None, 10)                510
-_________________________________________________________________
-dense_4 (Dense)              (None, 1)                 11
-=================================================================
-Total params: 770,619
-Trainable params: 770,619
-Non-trainable params: 0
-_________________________________________________________________
 
 #### 2.2. Attempts to reduce overfitting in the model
 The model contains a dropout layer in order to reduce overfitting (model.py line 141). 
@@ -120,32 +93,31 @@ The final model architecture (model.py lines 18-24) consisted of a convolution n
 
 Here is a visualization of the architecture (note: visualizing the architecture is optional according to the project rubric)
 
-![alt text][image1]
-
-#### 3.3. Creation of the Training Set & Training Process
-
-To capture good driving behavior, I first recorded two laps on track one using center lane driving. Here is an example image of center lane driving:
-
-![alt text][image2]
-
-I then recorded the vehicle recovering from the left side and right sides of the road back to center so that the vehicle would learn to .... These images show what a recovery looks like starting from ... :
-
-![alt text][image3]
-![alt text][image4]
 ![alt text][image5]
 
-Then I repeated this process on track two in order to get more data points.
-
-To augment the data sat, I also flipped images and angles thinking that this would ... For example, here is an image that has then been flipped:
+#### 3.3. Creation of the Training Set & Training Process
+To capture good driving behavior, I first recorded two laps on track one using center lane driving. Here is an example image of center lane driving:
 
 ![alt text][image6]
+
+I then recorded the vehicle recovering from the left side and right sides of the road back to center so that the vehicle would learn to recover once it inevitably starts drifting to the sides of the track. These images show what a recovery looks like:
+
 ![alt text][image7]
+![alt text][image8]
+![alt text][image9]
 
-Etc ....
+To augment the data sat, I also flipped images and angles thinking that this would eliminate the left turn bias, arising from the directionality of the track. For example, here is an image that has then been flipped:
 
-After the collection process, I had X number of data points. I then preprocessed this data by ...
+![alt text][image10]
+![alt text][image11]
 
+I used the translated images and corrected steering angles described before to eliminate the bias towards straight driving. These images look as follows: 
 
-I finally randomly shuffled the data set and put Y% of the data into a validation set. 
+![alt text][image12]
+![alt text][image13]
 
-I used this training data for training the model. The validation set helped determine if the model was over or under fitting. The ideal number of epochs was Z as evidenced by ... I used an adam optimizer so that manually training the learning rate wasn't necessary.
+After the collection process, I had 48,216 number of data points. The preprocessing of the data includes the cropping, and normalizing of the images.
+
+I finally randomly shuffled the data set and put 20% of the data into a validation set. 
+
+I used this training data for training the model. The validation set helped determine if the model was over or under fitting. The ideal number of epochs turned out to be 3 as more epochs did not improve the validation accuracy.
