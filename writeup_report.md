@@ -89,9 +89,23 @@ At the end of the process, the vehicle is able to drive autonomously around the 
 
 #### 3.2. Final Model Architecture
 
-The final model architecture (model.py lines 18-24) consisted of a convolution neural network with the following layers and layer sizes ...
+The final model architecture consisted of a convolution neural network with the following layers and layer sizes:
 
-Here is a visualization of the architecture (note: visualizing the architecture is optional according to the project rubric)
+| Layer (type)                | Output Shape             | Param #  |
+| --------------------------- |:------------------------:| --------:|
+| cropping2d_1 (Cropping2D)   | (None, 80, 320, 3)       | 0        |
+| lambda_1 (Lambda)           | (None, 80, 320, 3)       | 0        |
+| conv2d_1 (Conv2D)           | (None, 38, 158, 24)      | 1824     |
+| conv2d_2 (Conv2D)           | (None, 17, 77, 36)       | 21636    |
+| conv2d_3 (Conv2D)           | (None, 7, 37, 48)        | 43248    |
+| conv2d_4 (Conv2D)           | (None, 5, 35, 64)        | 27712    |
+| conv2d_5 (Conv2D)           | (None, 3, 33, 64)        | 36928    |
+| dropout_1 (Dropout)         | (None, 3, 33, 64)        | 0        |
+| flatten_1 (Flatten)         | (None, 6336)             | 0        |
+| dense_1 (Dense)             | (None, 100)              | 633700   |
+| dense_2 (Dense)             | (None, 50)               | 5050     |
+| dense_3 (Dense)             | (None, 10)               | 510      |
+| dense_4 (Dense)             | (None, 1)                | 11       |
 
 ![alt text][image5]
 
@@ -120,4 +134,4 @@ After the collection process, I had 48,216 number of data points. The preprocess
 
 I finally randomly shuffled the data set and put 20% of the data into a validation set. 
 
-I used this training data for training the model. The validation set helped determine if the model was over or under fitting. The ideal number of epochs turned out to be 3 as more epochs did not improve the validation accuracy.
+I used this training data for training the model. The validation set helped determine if the model was over or under fitting. The ideal number of epochs turned out to be 2 with 15,000 steps as more epochs did not improve the validation accuracy.
