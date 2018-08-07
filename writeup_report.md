@@ -133,3 +133,6 @@ After the collection process, I had 48,216 number of data points. The preprocess
 I finally randomly shuffled the data set and put 20% of the data into a validation set. 
 
 I used this training data for training the model. The validation set helped determine if the model was over or under fitting. The ideal number of epochs turned out to be 2 with 15,000 steps as more epochs did not improve the validation accuracy.
+
+#### 3.4 Update
+In the meantime, I the model some more to handle the jungle track with 2 laps of training data in that track, then after succesful testing, I also added video2.mp4 to the recordings. The data augmentation techniques helped to handle the sharp turns and changes in pitch. 
