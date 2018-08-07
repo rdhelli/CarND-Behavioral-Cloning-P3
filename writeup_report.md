@@ -107,8 +107,6 @@ The final model architecture consisted of a convolution neural network with the 
 | dense_3 (Dense)             | (None, 10)               | 510      |
 | dense_4 (Dense)             | (None, 1)                | 11       |
 
-![alt text][image5]
-
 #### 3.3. Creation of the Training Set & Training Process
 To capture good driving behavior, I first recorded two laps on track one using center lane driving. Here is an example image of center lane driving:
 
